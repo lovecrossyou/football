@@ -3,7 +3,23 @@ let request = require('request');
 let iconv = require('iconv-lite');
 
 const prefixUrl = 'http://www.okooo.com';
-const url = prefixUrl + '/livecenter/football/?date=2017-10-30';
+const url = prefixUrl + '/livecenter/football/?date=2017-10-29';
+
+
+
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+    host     : 'localhost',
+    user     : 'root',
+    password : '123456',
+    database : 'football'
+});
+
+connection.connect();
+
+
+
+
 
 // 获取球队结果信息
 fetchTeamInfo = (url) => {
@@ -18,7 +34,9 @@ fetchTeamInfo = (url) => {
             }
         });
         let trList = $('table').children('tr');
-        trList = trList.slice(0, 10);
+        // trList = trList.slice(0, 10);
+
+        let games = [] ;
         for (let i = 0; i < trList.length; i++) {
             let tdArr = trList.eq(i + 2).find("td");
             let game_type = tdArr.eq(1).text();//赛事类型
@@ -32,31 +50,40 @@ fetchTeamInfo = (url) => {
             let guest = guestNode.eq(0).text();
             let game_guest3 = tdArr.eq(9);//胜 平 负
             let valuesNode = $(game_guest3).children('span');
-            let values = [];
-            values.push({
-                win: valuesNode.eq(0).text(),
-                even: valuesNode.eq(1).text(),
-                lost: valuesNode.eq(2).text(),
-            });
+            let game_win = valuesNode.eq(0).text() ;
+            let game_even = valuesNode.eq(1).text() ;
+            let game_lose = valuesNode.eq(2).text() ;
+
+
+
             let game_guest5 = tdArr.eq(11);
             let hrefs = $(game_guest5).children('a');
-            let urls = [];
-            urls.push({
-                oddUrl: prefixUrl + hrefs.eq(0).attr('href'),
-                historyUrl: prefixUrl + hrefs.eq(1).attr('href'),
-            });
-            let game = {
-                game_type: game_type,
-                game_time: game_time,
-                game_status: game_status,
-                game_host: game_host,
-                game_guest: guest,
-                game_result: game_result,
-                game_guest3: values,
-                game_guest5: urls,
-            }
-            console.log(game);
+
+            let odd_url = prefixUrl + hrefs.eq(0).attr('href') ;
+            let history_url = prefixUrl + hrefs.eq(1).attr('href') ;
+
+            let game = [
+                game_type,
+                game_time,
+                game_status,
+                game_host,
+                guest,
+                game_result,
+                game_win,
+                game_even,
+                game_lose,
+                odd_url,
+                history_url
+            ];
+            games.push(game);
         }
+
+        var sql = "INSERT INTO game_info(`game_type`,`game_time`,`game_status`, `game_host`,`game_guest`,`game_result`,`game_win`, `game_even`,`game_lose`,`odd_url`, `history_url`) VALUES ?";
+        connection.query(sql,[games], function (error, results, fields) {
+            if (error) throw error;
+            console.log('The solution is: ', results);
+        });
+        connection.end();
     });
 }
 
@@ -116,6 +143,6 @@ fetchOddsInfo = (url) => {
 }
 
 
-// fetchTeamInfo(url);
-const url = 'http://www.okooo.com/soccer/match/929965/odds/' ;
+fetchTeamInfo(url);
+// const url = 'http://www.okooo.com/soccer/match/929965/odds/' ;
 
