@@ -3,7 +3,7 @@ let request = require('request');
 let iconv = require('iconv-lite');
 
 const prefixUrl = 'http://www.okooo.com';
-const url = prefixUrl + '/livecenter/football/?date=2017-10-29';
+const url = prefixUrl + '/livecenter/football/?date=2017-10-4';
 
 
 // 写入数据库
@@ -41,7 +41,7 @@ fetchTeamInfo = (url) => {
             }
         });
         let trList = $('table').children('tr');
-        trList = trList.slice(0, 10);
+        // trList = trList.slice(0, 10);
 
         let games = [];
         for (let i = 0; i < trList.length; i++) {
@@ -81,11 +81,12 @@ fetchTeamInfo = (url) => {
                 odd_url,
                 history_url
             ];
+            // console.log('index',i,game);
             games.push(game);
         }
 
-        // writeToDB(games);
-        console.log(games);
+        writeToDB(games);
+        // console.log(games);
 
     });
 }
